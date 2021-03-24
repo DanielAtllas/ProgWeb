@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Persistência - Prog. Web</title>
+        <meta name="description" content="Este é um blog referente a estudos e econteúdos sobre programação concorrente.">
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <h1>Persistência - Prog. Web</h1>
+        <p>O proceso de persistência em prog. web se consiste na coleta e armazenamento de um dado (normalmente em um BD), de forma a mante-los como backup seguros. Ou seja, é a capacidade de <strong>armazenar dados de objetos em uma unidade não-volátil</strong>. Para isso, é preciso realizar uma técnica de <strong>mapeamento objeto-relacional</strong>, a qual consiste em representar um objeto de maneira relacional na gravação e recuperação do banco de dadaos.</p>
+        <p>Existem 2 principais padrões de realizar esta técnica, sendo elas:</p>
+        <ul>
+            <li><strong>DTO - Data Transfer Objct</strong></li>
+            <ul>
+                <li>Onde simples objetos que contêm métodos para gravar e ler dados.</li>
+                <li>Métodos são criados no programa, de forma a trabalhar com os registros, no banco.</li>
+            </ul>
+            <br>
+            <li><strong>DAO - Data Acess Objects</strong></li>
+            <ul>
+                <li>Onde tem como objetivo abstrair e encapsular todo e qualquer tipo de acesso à fonte de dados. Este gerência as conexões com a fonte de dados., lendo-os e gravando-os.</li>
+                <li>É criada uma segunda classe "<i>classeDAO</i>" onde conterá os métodos de persistência que farão ligação com o banco</li>
+            </ul>
+        </ul>
+        <p>Temos então o conceito de como realizar a persistência dos objetos de um programa em um banco, mas o que é feito e como é feito? Bom, para isso, utilizamos de um procedimento chamado <strong>CRUD</strong>, que em termos gerais são a junção/criação das <strong>operações e comandos básicos em um banco.</strong> Sendo eles:</p>
+        <ul>
+            <li><strong>C</strong>REATE - INSERT</li>
+            <li><strong>R</strong>EAD - SELECT</li>
+            <li><strong>U</strong>PDATE</li>
+            <li><strong>D</strong>ELETE</li>
+        </ul>
+        <p>Passando agora para uma forma mais exemplificada deste processo de persistência, imagine uma classe <i>Curso</i> que gere o objeto:</p>
+        <pre>
+            <strong>long</strong> ID;
+            <strong>String</strong> Nome;
+            <strong>int</strong> Semestres;
+            <strong>float</strong> Valor;
+        </pre>
+        <p>Agora, imagine que ao realizar as etapas de conexão com um banco de dados, teremos a exibição dos registros em tabela, da seguinte forma:</p>
+        <pre>
+            <strong>ID | Nome | Semestre | Valor</strong>
+	    --- ------ ---------- -------
+	    1  | POO  | 8	 | 500,99
+        </pre>
+        <p>Basicamente é isso que será trabalhado neste processo. Para isso, seguiremos um passo a passo do que deve ser feito para gerar esta compatibilidade de comandos realizados no programa e executados em um banco de dados:</p>
+        <strong><p>OBS: Usaremos como base, a criação de um projeto de Escola, a qual contém cursos como objetos</p></strong>
+        <ol>
+            <strong><li>Criar um projeto JAVA</li></strong>
+            <br>
+            <strong><li>Criar uma estrutura de pacotes</li></strong>
+            <ul>
+                <li>&lt;projeto></li>
+                <li>&lt;projetoDAO></li>
+            </ul>
+            <br>
+            <strong><li>Criar em <i>&lt;projetoDAO></i> o arquivo <strong>banco.sql</strong></li></strong>
+             <ul>
+                <li>Este servirá como um script backup, onde conterão os comandos SQL utilizados para a criação do database no banco de dados, como por exemplo o comando de <i>CREATE DATABASE</i>.</li>
+            </ul>
+            <br>
+            <strong><li>Criar no banco de dados, o database</li></strong>
+            <br>
+            <strong><li>Criar a classe no programa (além de criar a "<i>main</i>"")</li></strong>
+            <br>
+            <strong><li>Incluir o processo de identificação única na classe</li></strong>
+            <ul>
+                <li>Se consiste em criar um identificador de objeto no programa (utilizando do <strong><i>implements Serializable</i></strong>).</li>
+                <pre>
+    <strong>import java.io.Serializable;
+    private static final long serialVerisonUID = 1L;</strong>
+                </pre>
+                
+            </ul>
+            <strong><li>Criar a "<i>classeDAO</i>" no pacote <i>&lt;projetoDAO></i></li></strong>
+            <ul>
+                <li>Criação da conexão com o banco, através do "<i>con</i>"</li>
+                <pre>
+    <strong>private Connection</strong> con;
+    
+    <strong>public &lt;classe>DAO() throws SQLException{
+        this.</strong>con = <strong>ConnectionFactory.getConnection()</strong>;
+    }
+                    
+                </pre>
+            </ul>
+            <strong><li>Criar classe "<i>ConnectionFactory</i>" no pacote <i>&lt;projetoDAO></i></li></strong>
+            <ul>
+                <li>Aqui estarão os comandos que fornecem a conexão com o banco de dados</li>
+                <pre>
+    <strong>//Attributes
+    private static Connection con=null;
+		
+    //Methods
+    public static Connection getConnection() throws SQLException {
+      if</strong> (con == null) {
+          <strong>try {
+              Class.forName</strong>("com.mysql.jdbc.Driver");
+              <strong>String</strong> sql = "jdbc:mysql://localhost/escola";
+              con = <strong>DriverManager.getConnection</strong>(sql, "root", "root");
+           }
+           <strong>catch (ClassNotFoundException e) {
+              throw new SQLException</strong>("Driver não localizado");
+           }
+       }
+	   
+      <strong>return con;
+    }
+	 
+    public static void close() throws SQLException {
+        con.close(</strong>);
+     }
+                </pre>
+            </ul>
+            <strong><li>Incluir os métodos de persistência na classe "<i>classeDAO</i>"</li></strong>
+            <ul>
+                <li>Para uma abreviação, faremos apenas os campos de inserção e listagem</li>
+            </ul>
+            <pre>
+        <strong>public int</strong> incluir(Curso curso) <strong>throws SQLException</strong> {
+            <strong>if</strong> (curso == null){
+                <strong>return</strong> 0;
+            }
+            <strong>String</strong> sql="INSERT INTO curso (nome, semestres, valor) values (?, ?, ?)";
+            <strong>PreparedStatement</strong> stmt = <strong>con.prepareStatement(sql)</strong>;
+            <strong>stmt.setString</strong>(1, curso.getNome());
+            <strong>stmt.setInt</strong>(2, curso.getSemestres());
+            <strong>stmt.setFloat</strong>(3, curso.getValor());
+            <strong>int</strong> retorno = <strong>stmt.executeUpdate()</strong>;
+            <strong>stmt.close();
+            
+            return</strong> retorno;
+        }
+        
+        
+        
+        <strong>public List</strong>&lt;Curso> listar() <strong>throws SQLException</strong> {
+            <strong>String</strong> sql = "SELECT * FROM curso";
+            <strong>PreparedStatement</strong> stmt = <strong>this.con.prepareStatement(sql)</strong>;
+            <strong>ResultSet</strong> rs = <strong>stmt.executeQuery()</strong>;
+            <strong>List</strong>&lt;Curso> cursos = <strong>new ArrayList</strong>&lt;Curso>();
+            <strong>while (rs.next())</strong> {
+                Curso curso = <strong>new</strong> Curso();
+                curso.setId(<strong>rs.getLong</strong>("id"));
+                curso.setNome(<strong>rs.getString</strong>("nome"));
+                curso.setSemestres(<strong>rs.getInt</strong>("semestres"));
+                curso.setValor(<strong>rs.getFloat</strong>("valor"));
+                cursos.add(curso);
+            }
+            <strong>rs.close();
+            stmt.close();
+            
+            return cursos;</strong>
+        }
+            </pre>
+            <strong><li>Criar os comandos principais da classe "<i>main</i>"</li></strong>
+            <pre>
+        <strong>//Attributes
+        Scanner</strong> teclado = <strong>new Scanner(System.in);</strong>
+        Curso curso;
+        <strong>List</strong>&lt;Curso> cursos;
+        CursoDAO cursoDAO;
+        <strong>int</strong> opcao;
+        
+        <strong>//Methods
+        try {</strong>
+            cursoDAO = <strong>new</strong> CursoDAO();
+            <strong>do {</strong>
+                opcao = menu(teclado);
+                <strong>switch</strong> (opcao) {
+                <strong>case 1:</strong>
+                    <strong>System.out.println</strong>("\n\n ==== INCLUSÃO ==== \n");
+                    curso = criarCurso(teclado);
+                    <strong>if</strong> (cursoDAO.incluir(curso) > 0)
+                        <strong>System.out.println</strong>("\nIncluído com sucesso");
+                    <strong>else</strong>
+                        <strong>System.out.println</strong>("Erro de inclusão");
+                <strong>break;</strong>
+                <strong>case 2:
+                    System.out.println</strong>("\n\n ==== LISTAGEM ==== \n");
+                    cursos = cursoDAO.listar();
+                    <strong>for</strong> (Curso cur : cursos) {
+                        <strong>System.out.println</strong>(" Nome......: " + cur.getNome()+"\n"
+                        + " Semestres.: " + cur.getSemestres()+"\n"
+                        + " Valor.....: " + cur.getValor());
+                        <strong>System.out.println</strong>("\n ========================== \n");
+                    }
+                <strong>break;
+
+                }
+            } while</strong> (opcao != 0);
+            
+            <strong>ConnectionFactory.close();
+            
+        } catch (SQLException e) {
+        
+            System.out.println("Erro de BD");
+        }
+	</strong>
+	
+	
+	<strong>public static int</strong> menu(<strong>Scanner</strong> teclado) {
+            <strong>int</strong> opcao;
+            <strong>System.out.println</strong>("\n\n ==== MENU ==== \n");
+            <strong>System.out.println</strong>(" 1. Incluir curso");
+            <strong>System.out.println</strong>(" 2. Listar cursos");
+            <strong>System.out.println</strong>(" 0. Sair");
+            <strong>System.out.print</strong>("\n Digite sua opção: ");
+            opcao = teclado<strong>.nextInt();
+            System.out.println</strong>("\n ========================== \n");
+            
+            <strong>return opcao;</strong>
+	}
+	
+	
+	<strong>public static</strong> Curso criarCurso(<strong>Scanner</strong> teclado) {
+            Curso curso = <strong>new</strong> Curso();
+            <strong>System.out.print</strong>("Digite o nome do curso...................: ");
+            curso.setNome(teclado<strong>.next());</strong>
+            <strong>System.out.print</strong>("Digite a quantidade de semestres do curso: ");
+            curso.setSemestres(teclado.<strong>nextInt());</strong>
+            <strong>System.out.print</strong>("Digite o valor do curso..................: ");
+            curso.setValor(teclado.<strong>nextFloat());</strong>
+            
+            <strong>return</strong> curso;
+	}
+            </pre>
+        </ol>
+    </body>
+</html>
