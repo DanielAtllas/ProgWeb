@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Introdução - Prog. Concorrente</title>
+        <meta name="description" content="Este é um blog referente a estudos e econteúdos sobre programação concorrente.">
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <h1>Introduçao - Prog. Web</h1>
+        <p>São bases de armazenamento e manipulação de dados, as quais são gerenciadas pela linguagem <strong>SQL - Structured Query Language</strong>. Através dele, podemos criar bancos e tabelas, realizar consultas, alteração de registros e etc.</p>
+        <p>Para que possamos atrelar os programas JAVA com um banco de dadps, precisamos <strong>adiconar as bibliotecas do banco em questão</strong> ao projeto. Para isso, precisamos>:</p>
+        <ol>
+            <li>Baixar o arquivo de drivers SQL (varia de banco para banco. Portanto, pesquise!) (utilizaremos do MySQL nestas aulas);</li>
+            <br>
+            <li>Copiar para o projeto;</li>
+            <br>
+            <li>Ir na opção <strong>Build Path</strong></li>
+        </ol>
+        <p>Dessa forma, teremos à seguinte aplicação:</p>
+        <img  src = "https://danielatllas.github.io/ProgWeb/img1.png " >
+        <p>Através do JAVA e seus comandos, ocorrerá uma <strong>conversão dos comandos escritos, em SQL</strong> à qual será interpretada pelo banco de dados e executada, trazendo o retorno desejado para o programa JAVA novamente. Ou seja, ao escrever e executar um comando em JAVA, caso este tenha sido configurado para abertura com um banco de dados, o comando será convertido e lido pelo database em questão, executado e retornar os dados coletados para o programa JAVA, que irá converte-los novamente em linguagem de programação.</p>
+        <p>Após termos incrementado o banco de dados no JAVA, criado um database junto a suas tabelas, partiremos para o uso desta, ou melhor, para a abertura desta conexão entre o JAVA e o banco, utilizando os seguintes comandos:</p>
+        <pre>
+            <strong>try {
+                 Class.forName</strong>("com.mysql.jdbc.Driver");
+                 <strong>String</strong> str = <strong>"jdbc:mysql://localhost/&lt;banco>?user=root&password=root"</strong>;
+                 <strong>Connection</strong> con = <strong>DriverManager.getConnection(str)</strong>;
+                 <strong>Statement</strong> stm = <strong>con.createStatement()</strong>;
+                 <strong>ResultSet</strong> rs = <strong>stm.executeQuery</strong>("&lt;comando SQL>");
+                 .
+                 .
+                 .
+                 <strong>con.close();</strong>
+            }
+            <strong>catch (ClassNotFoundException e) {
+                System.out.print</strong>("Driver nao encontrado");
+            }
+            <strong>catch (SQLException e) {
+                System.out.print</strong>("Erro ao executar SQL");
+            }
+        </pre>
+        <p>Pode parecer um tanto complicado à primeira vista, mas vamos <i>debugar</i> estes comandos para uma melhor compreenção de suas execuções:</p>
+        <ul>
+            <li><strong>Class.forName</strong></li>
+                <ul>
+                    <li>Responsável por instanciar uma classe/método do driver do banco em questão.</li>
+                    <li>Necessária a inclusão do diretório do driver do banco.</li>
+                </ul>
+            <br>
+            <li><strong>str</strong></li>
+                <ul>
+                    <li>Variável para armanzenar a indicação de conexão com o banco.</li>
+                    <li>Necessário passar o endereço localizado pelo banco, além do <i>user</i> e <i>password</i> de conexão.</li>
+                </ul>
+            <br>
+            <li><strong>Connection</strong></li>
+                <ul>
+                    <li>Realizar a conexão com o banco, utilizando da variável "<strong>str</strong>" como parâmetro.</li>
+                    <li>Necessária a inclusão do comando <i><strong>DriverManager.getConnection(str)</strong></i>.</li>
+                </ul>
+            <br>
+            <li><strong>Statement</strong></li>
+                <ul>
+                    <li>Integração da conexão criada ao objeto do programa</li>
+                    <li>Necessária a inclusão do comando <i><strong>con.createStatement()</strong></i>.</li>
+                </ul>
+            <br>
+            <li><strong>ResultSet</strong></li>
+                <ul>
+                    <li>Realizar a execução de uma query SQL e armazenar os dados retornados na variável "<strong>rs</strong>".</li>
+                    <li>Necessária a inclusão do comando <i><strong>stm.executeQuery()</strong></i>.</li>
+                </ul>
+        </ul>
+        <p>Tendo estes conceitos entendidos, partiremos para o exemplo de uma aplicação real, onde usaremos estes comandos de conexão para realizar uma <strong>consulta em um banco Curso</strong>. Para isso, segue o exemplo dos comandos:</p>
+        <pre>
+            <strong>try {
+                 Class.forName</strong>("com.mysql.jdbc.Driver");
+                 <strong>String</strong> str = <strong>"jdbc:mysql://localhost/&lt;banco>?user=root&password=root"</strong>;
+                 <strong>Connection</strong> con = <strong>DriverManager.getConnection(str)</strong>;
+                 <strong>Statement</strong> stm = <strong>con.createStatement()</strong>;
+                 <strong>ResultSet</strong> rs = <strong>stm.executeQuery</strong>("&lt;comando SQL>");
+                 <strong>while (rs.next()) {
+                     System.out.println</strong>("Nome......: " + <strong>rs.getString</strong>("Nome"));
+                     <strong>System.out.println</strong>("Semestres.: " + <strong>rs.getInt</strong>("Semestres"));
+                     <strong>System.out.println</strong>("Valor.....: " + <strong>rs.getFloat</strong>("Valor"));
+                 }
+                 <strong>con.close();</strong>
+            }
+            <strong>catch (ClassNotFoundException e) {
+                System.out.print</strong>("Driver nao encontrado");
+            }
+            <strong>catch (SQLException e) {
+                System.out.print</strong>("Erro ao executar SQL");
+            }
+        </pre>
+        <p>Perceba que foi utilizado de um <i>while</i> para realizar um looping de exibições e neste, foi usado do método <strong><i>rs.next()</i></strong>, o qual irá trablhar como um ponteiro nos dados da tabela do banco de dados, ou seja, ele correrá por toda a primeira tupla da tabela e contará como zero, pulará para a segunda contando como 1 e assim por diante. Os comandos seguintes são de exibição dos registros coletados pela variável "<i><strong>rs</strong></i>", onde também é usado do comando "<i><strong>rs.get&lt;tipo></strong></i>" para exibir o dado da coluna em questão.</p>
+        <p><strong>OBS: Lembre-se que estes comandos estão partindo da biblioteca do banco inserido no programa JAVA. Portanto, para que eles tenha, utilidade no programa, é preciso inclui-los como biblioteca na classe que os está utilizando. Para isso, utilizandos do comando <i>ctrl + shift + O</i> e incluimos as bibliotecas .java.sql</strong></p>
+        <p>Podemos listar outros tipos de exemplos para uma compreenção melhor deste processo, como por exemplo a realização de <strong>inserção de registros no banco através do JAVA</strong>:</p>
+        <pre>
+        <strong>Statement</strong> stmt = <strong>con.createStatement()</strong>;
+        <strong>int</strong> r = <strong>stmt.executeUpdate</strong>("INSERT INTO curso (nome,semestres, valor) values (\"BCC\", 8, 100)");
+        </pre>
+    </body>
+</html>
