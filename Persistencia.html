@@ -154,6 +154,60 @@
             
             return cursos;</strong>
         }
+        
+        
+        
+        <strong>public</strong> Curso consultar(<strong>String</strong> nome) <strong>throws SQLException</strong> {
+            <strong>String</strong> sql = "SELECT * FROM curso WHERE nome=?"
+            <strong>PreparedStatement</strong> stmt = <strong>this.con.prepareStatement(sql)</strong>;
+            <strong>stmt.setString</strong>(1, nome);
+            <strong>ResultSet</strong> rs = <strong>stmt.executeQuery();</strong>
+            Curso curso = <strong>null;
+            if (rs.first())</strong> {
+                Curso curso = <strong>new</strong> Curso();
+                curso.setId(<strong>rs.getLong</strong>("id"));
+                curso.setNome(<strong>rs.getString</strong>("nome"));
+                curso.setSemestres(<strong>rs.getInt</strong>("semestres"));
+                curso.setValor(<strong>rs.getFloat</strong>("valor"));
+            }
+            <strong>rs.close();
+            stmt.close();
+            
+            return cursos;</strong>
+        }
+        
+        
+        
+        <strong>public int</strong> alterar(Curso curso) <strong>throws SQLException</strong> {
+            <strong>if</strong> (curso == null){
+                <strong>return</strong> 0;
+            }
+            <strong>String</strong> sql="UPDATE curso SET nome=?, semestres=?, valor=? WHERE ID=?";
+            <strong>PreparedStatement</strong> stmt = <strong>con.prepareStatement(sql)</strong>;
+            <strong>stmt.setString</strong>(1, curso.getNome());
+            <strong>stmt.setInt</strong>(2, curso.getSemestres());
+            <strong>stmt.setFloat</strong>(3, curso.getValor());
+            <strong>stmt.setLong</strong>(4, curso.getID());
+            <strong>int</strong> retorno = <strong>stmt.executeUpdate()</strong>;
+            <strong>stmt.close();
+            
+            return</strong> retorno;
+        }
+        
+        
+        
+        <strong>public int</strong> excluir(Curso curso) <strong>throws SQLException</strong> {
+            <strong>if</strong> (curso == null){
+                <strong>return</strong> 0;
+            }
+            <strong>String</strong> sql="DELETE FROM curso WHERE=?";
+            <strong>PreparedStatement</strong> stmt = <strong>con.prepareStatement(sql)</strong>;
+            <strong>stmt.setString</strong>(1, curso.getID());
+            <strong>int</strong> retorno = <strong>stmt.executeUpdate()</strong>;
+            <strong>stmt.close();
+            
+            return</strong> retorno;
+        }
             </pre>
             <strong><li>Criar os comandos principais da classe "<i>main</i>"</li></strong>
             <pre>
@@ -163,6 +217,7 @@
         <strong>List</strong>&lt;Curso> cursos;
         CursoDAO cursoDAO;
         <strong>int</strong> opcao;
+        <strong>String</strong> nome;
         
         <strong>//Methods
         try {</strong>
@@ -187,10 +242,47 @@
                         + " Valor.....: " + cur.getValor());
                         <strong>System.out.println</strong>("\n ========================== \n");
                     }
-                <strong>break;
+                <strong>break;</strong>
+                <strong>case 3:
+                    System.out.println</strong>("\n\n ==== CONSULTAR ==== \n");
+                    <strong>System.out.print</strong>("Digite o nome do curso...................: ");
+					nome = teclado <strong>.next()</strong>;
+                    curso = cursoDAO.consultar(nome);
+                    <strong>if</strong> (curso != <strong>null</strong>) {
+                        <strong>System.out.println</strong>(" Nome......: " + cur.getNome()+"\n"
+                        + " Semestres.: " + cur.getSemestres()+"\n"
+                        + " Valor.....: " + cur.getValor());
+                        <strong>System.out.println</strong>("\n ========================== \n");
+                    }
+                <strong>break;</strong>
+                <strong>case 4:
+                    System.out.println</strong>("\n\n ==== ALTERAR ==== \n");
+                    <strong>System.out.print</strong>("Digite o nome do curso...................: ");
+					nome = teclado <strong>.next()</strong>;
+                    curso = cursoDAO.consultar(nome);
+                    <strong>if</strong> (curso != <strong>null</strong>) {
+                        curso = criarCurso(teclado);
+                        <strong>if</strong>(cursoDAO.alterar(curso) > 0)
+                            <strong>System.out.println</strong>("\nAlterado com sucesso");
+                        <strong>else
+                            System.out.println</strong>("Erro de alteração");
+                    }
+                <strong>break;</strong>
+                <strong>case 5:
+                    System.out.println</strong>("\n\n ==== DELETAR ==== \n");
+                    <strong>System.out.print</strong>("Digite o nome do curso...................: ");
+					nome = teclado <strong>.next()</strong>;
+                    curso = cursoDAO.consultar(nome);
+                    <strong>if</strong> (curso != <strong>null</strong>) {
+                        <strong>if</strong>(cursoDAO.excluir(curso) > 0)
+                            <strong>System.out.println</strong>("\nExcluido com sucesso");
+                        <strong>else
+                            System.out.println</strong>("Erro de exclusão");
+                    }
+                <strong>break;</strong>
 
                 }
-            } while</strong> (opcao != 0);
+            } <strong>while</strong> (opcao != 0);
             
             <strong>ConnectionFactory.close();
             
@@ -206,6 +298,9 @@
             <strong>System.out.println</strong>("\n\n ==== MENU ==== \n");
             <strong>System.out.println</strong>(" 1. Incluir curso");
             <strong>System.out.println</strong>(" 2. Listar cursos");
+            <strong>System.out.println</strong>(" 3. Consultar curso");
+            <strong>System.out.println</strong>(" 4. Alterar curso");
+            <strong>System.out.println</strong>(" 5. Deletar curso");
             <strong>System.out.println</strong>(" 0. Sair");
             <strong>System.out.print</strong>("\n Digite sua opção: ");
             opcao = teclado<strong>.nextInt();
