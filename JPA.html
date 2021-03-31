@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>JPA - Prog. Web</title>
+        <meta name="description" content="Este é um site de estudos sobre programação web.">
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <h1>JPA e Frameworks - Prog. Web</h1>
+        <p>A JPA ou <i>Java Persistence API</i>, é uma aplicação padrão da linguagem JAVA, que <strong>descreve uma interface para frameworks de persistência</strong>, de forma a descrever o que deve ser aplicado. Esta, define um meio de mapeamento objeto-relacional para objetos JAVA.</p>
+        <p>Estes frameworks podem ser explicados como bibliotecas já prontas, de forma que é copiado e utilizado diretamente por um programa. Mas em termos mais técnicos, este é <strong>uma abstração que une códigos comuns entre vários projetos</strong>, ou seja, uma aplicação com pacote de códigos semi-produtos que podem ser utilizados no desenvolvimento.</p>
+        <p>Sua proposta é aplicar funcionalidades, comandos e estrturas já prontas, para garantir a qualidade do projeto e produtividade do mesmo. Como é de se imaginar, existêm inúmeros frameworks prontos para uso, mas em nosso caso, utilizaremos do <strong>EclipseLink</strong> para nos fornecer os serviços desta aplicação.</p>
+        <p>O EclipseLink é como dito anteriormente, um framework de aplicação para persistência no mapeamento objeto-relacional, o qual gera comandos SQL, mantendo o programa portável para qualquer banco relacional, porém, causando um pequeno aumento no tempo de execução do mesmo.</p>
+        <hr>
+        <h2>Entity Beans</h2>
+        <p>Este representa um objeto de entidade de negócio que existe no armazenamento persistente, ou seja, <strong>estes obedecem determinadas regras que tornam a classe e seus atributos/métodos reconhecíveis como tabela e suas colunas no bano de dados</strong>.  Para isso, a  classe precisa seguir regras que a tornem hábitas para isso, sendo:</p>
+        <ul>
+            <li>Possuir contrutor público;</li>
+            <br>
+            <li>Ter atributos privados;</li>
+            <br>
+            <li>Uso de encapsulamento em seus atributos.</li>
+        </ul>
+        <p>Após essa implementação, será preciso <strong>alterar a classe Connection Factory</strong>, a qual recebia os comandos de conxão com o banco de dados. Esta agora, receberá os seguintes comandos:</p>
+        <pre>
+    <strong>public class ConnectionFactory {
+        private static EntityManagerFactory</strong> emF = <strong>null;
+        private static EntityManager</strong> em = <strong>null;</strong>
+		
+        <strong>public static EntityManager getEntityManager() {
+            if (</strong>emF == <strong>null)</strong>
+                emF = <strong>Persistence.createEntityManagerFactory</strong>("escola"); <strong>//Altere este parâmetro com o nome de seu database
+		 
+            if (</strong>em == <strong>null)</strong>
+                em = emF<strong>.createEntityManager();
+			
+            return</strong> em;
+        }
+
+        <strong>public static void close() {</strong>
+            em<strong>.close();</strong>
+            emF<strong>.close();</strong>
+        }
+    }
+        </pre>
+        <p>Perceba a unidade de criação do atributo e método <strong>EntityManager</strong>, este gerência p <i>Entity Beans</i> de forma à recuperar dados do banco (<i>SELECT</i>), montar <i>Entity Beans</i> com dados do banco (<i>SELECT</i>) e sincronizar o <i>Entity Beans</i> com o bano de dados (<i>INSERT/UPDATE</i>). Além disso, este possui inúmeros métodos para seu complemento, de forma a tornar a persistência mais complexa, sendo alguns deles:</p>
+        <ul>
+            <li><strong>persist(): Insert</strong> – Persiste no banco um objeto/entidade que ainda não foi persistido;</li>
+            <br>
+            <li><strong>find(): Select</strong> – Localiza objeto/entidade no banco. Retorna null caso não encontre;</li>
+            <br>
+            <li><strong>merge(): Update</strong> – Permite que clientes remotos realizem uma busca, altere o objeto/entidade e novamente 
+            sincronize os dados do objeto/entidade com o banco;</li>
+            <br>
+            <li><strong>remove(): Delete</strong> – Remove um objeto/entidade do banco;</li>
+            <br>
+            <li><strong>refresh():</strong> Atualiza os dados do objeto/entidade (nova busca no banco);</li>
+            <br>
+            <li><strong>flush():</strong> Realiza o sincronismo imediato do objeto/entidade com o banco;</li>
+            <br>
+            <li><strong>clear():</strong> Desasssocia todas os objetos/entidades com o banco, fazendo com que os dados não sincronizdos sejam perdidos;</li>
+            <br>
+            <li><strong>contains():</strong> Verifica se o EntityManager já está gerenciando uma entidade.</li>
+        </ul>
+        <p>Portanto, devido termos alterado o <i>conncetion factory</i>, precisaremos também modificar a classe <strong>DAO</strong>, incrementando o atributo e métodos de <i>Entity Manager</i>, além de modificarmos os métodos de CRUD. </p>
+        <pre>
+    <strong>private EntityManager</strong> em;
+		
+    <strong>public</strong> CursoDAO () {
+        <strong>this.</strong>em = <strong>ConnectionFactory.getEntityManager();</strong>
+        
+    }
+        </pre>
+        <p>Dessa forma, utilizaremos do <i>Entity Manager</i> para realizar as transações no banco de dado (CRUD), a qual <strong>só será realizada se todos os comandos e execuções do método, funcionarem</strong>. Logo, isso torna o JPA mais seguro para com os registros do banco de dados. Perceberá também o quanto mais simples se tornam os métodos CRUD da classe, devido a inclusão do framework.</p>
+        <hr>
+        <h2>Implementação</h2>
+        <p>Tendo estes termos compreendidos, partiremos para a sua implementação no JAVA. Neste caso, partiremos de um programa de gerenciamento de cursos de uma escola e aplicaremos a JPA neste sistema. Ao termos o esqueleto do projeto já criado e testado, faremos uma pequena série de procedimentos:</p>
+        <ol>
+            <li>Importar as bibliotecas do framework EclipseLink para o <i>SRC</i> do projeto:</li>
+            <pre>
+    eclipselink.jar
+
+    jakarta.persistence_2.2.3.jar
+        
+    <strong>OBS: Lembrete: Sempre precisa importar o driver do MySQL: mysql-connector-java-5.1.49.jar</strong>
+            </pre>
+            <li>Adiciona-los ao <i>Build Path</i></li>
+            <br>
+            <li>Criar em <i>SRC</i> uma pasta (<i><strong>folder</strong></i> – NÃO source folder) chamada <strong>“META-INF”</strong> e nela um arquivo chamado <strong>“persistence.xml”</strong>.</li>
+            <ul><li>Neste arquivo ficarão contidos os comandos de conexão com o banco de dados e suas propriedades</li></ul>
+            <br>
+            <li>Inserir no arquivo persistence.xml o seguinte código:</li>
+            <pre>
+    <strong>&lt;?xml version="1.0" encoding="UTF-8"?></strong>
+        <strong>&lt;persistence xmlns</strong>="http://java.sun.com/xml/ns/persistence" <strong>version="2.0">
+        
+            //Definição de unidade de persistência
+            &lt;persistence-unit name=</strong>"escola" <strong>transaction-type="RESOURCE_LOCAL">
+            
+                //Provedor que a unidade utilizará
+                &lt;provider>org.eclipse.persistence.jpa.PersistenceProvider&lt;/provider>
+                
+                //Classe utilizada pela persistência
+                &lt;class>br.ucb.modelo.Curso&lt;/class>
+                
+                //Propriedades da persistência 
+                &lt;properties>
+                    &lt;property name="javax.persistence.jdbc.url" value</strong>="jdbc:mysql://localhost:3306/escola" <strong>/>
+                    &lt;property name="javax.persistence.jdbc.user" value</strong>="root" <strong>/>
+                    &lt;property name="javax.persistence.jdbc.password" value</strong>="root" <strong>/>
+                    &lt;property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+                    &lt;property name="eclipselink.ddl-generation" value="none" />
+                    &lt;property name="eclipselink.logging.level" value="fine" />
+                    &lt;property name="eclipselink.jdbc.property.useSSL" value="false" />
+                    
+                &lt;/properties>
+            &lt;/persistence-unit>
+        &lt;/persistence> </strong>
+            </pre>
+            <ul>
+                <li>Este código tem a exata função de criar a conexão com o banco de dados, de maneira mais prática (nos eliminando da necessidade de escrever o processo de conxão na <i>main()</i>). Algo que vale a atenção neste script, são os comandos de propriedades, onde:</li><br>
+                <ul>
+                    <li><strong>.Password e .User</strong> - Usuário e senha de conexão com o database (geralmente "<i>root</i>")</li>
+                    <br>
+                    <li><strong>ddl.generation</strong> - Criação instântanea de propriedades DDL no database, a partir do programa. Seu parâmetro pode receber as seguintes funções:</li>
+                    <ul>
+                        <li><strong>"create-tables"</strong> - Cria tabelas no banco, baseado nas entidades do programa.</li>
+                        <li><strong>"create-or-extend-tables"</strong> - Se não existir, cria as tabelas. Se existir, as atualiza.</li>
+                    </ul>
+                    <br>
+                    <li><strong>.logging.level</strong> - Exibição no console sobre o que está sendo realizado no banco, como um <i>debug</i>. <strong>OBS: Aconselhável usar no processo de criação do projto. Porém, retira-lo na etapa de produção (ocultando informações do usuário final).</strong></li>
+                </ul>
+            </ul>
+            <br>
+            <li>Anotar a Entidade (ENTITY BEAN) Curso:</li>
+            <ul><li>Por estarmos utilizando da persistência na classe Curso, devemos inserir estes comandos na mesma</li></ul>
+            <pre>
+    <strong>@Entity
+    @Table(name=</strong>"curso")
+    <strong>public class</strong> Curso <strong>implements Serializable {</strong>
+        <strong>@Id
+        
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
+        private long</strong> id;
+        
+        <strong>@Column(name="nome")
+        private String</strong> nome;
+        
+        <strong>@Column(name="semestres")
+        private int</strong> semestres;
+        
+        <strong>@Column(name="valor")
+        private float</strong> valor;
+    }
+            </pre>
+            <ul>
+                <li>Vale lembrar da necessidade de importação das bibliotecas (<i>ctrl + shift + O</i>). Perceba que alguns desses comandos são novos, chamados de <strong>anotation</strong>, os quais tem a função de fazer um reonhecimento entre os dados da classe com a tabela que a corresponderá, e para uma melhor compreensão, segue suas descrições abaixo:</li><br>
+                <ul>
+                    <li><strong>@table</strong> - Definição/reconhecimeno para o bano tratar desta classe, como tabela;</li>
+                    <br>
+                    <li><strong>@id e @GeneratedValue</strong> - Definição/reconhecimento da chave primária que a tabela receberá, usando do <i>"generate"</i> para gerar valores automaticamente;</li>
+                    <br>    
+                    <li><strong>@column</strong> - Definição/reconhecimento das colunas da tabela.</li>
+                    <br>
+                </ul>
+            </ul>
+            <li> Alterar a fábrica/classede conexão <i>ConnectionFactory</i></li>
+            <pre>
+    <strong>public class ConnectionFactory {
+        private static EntityManagerFactory</strong> emF = <strong>null;
+        private static EntityManager</strong> em = <strong>null;</strong>
+		
+        <strong>public static EntityManager getEntityManager() {
+            if (</strong>emF == <strong>null)</strong>
+                emF = <strong>Persistence.createEntityManagerFactory</strong>("escola"); <strong>//Altere este parâmetro com o nome de seu database
+		 
+            if (</strong>em == <strong>null)</strong>
+                em = emF<strong>.createEntityManager();
+			
+            return</strong> em;
+        }
+
+        <strong>public static void close() {</strong>
+            em<strong>.close();</strong>
+            emF<strong>.close();</strong>
+        }
+    }
+        </pre>
+            <li>Editar a classe “CursoDAO”, adicionando estes elementos e editando os métodos de trabalho com os dados do programa para com o banco:</li>
+            <pre>
+        public class CursoDAO {
+	//Attributes
+	private EntityManager em;
+	
+	//Methods
+	public CursoDAO(){
+		this.em = ConnectionFactory.getEntityManager();
+	}
+	
+	public boolean incluir(Curso curso) {
+		this.em.getTransaction().begin();
+		try {
+			this.em.persist(curso);
+			this.em.getTransaction().commit();
+			
+			return true;
+		} catch (Exception e) {
+			this.em.getTransaction().rollback();
+			
+			return false;
+		}
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	public List&lt;Curso> listar() {
+		Query q = this.em.createQuery("SELECT c FROM Curso c");
+		
+		return q.getResultList();
+	}
+
+	
+	public Curso consultar(long id) {
+		return this.em.find(Curso.class, id);
+	}
+
+	public Curso consultar(String nome) {
+		Query q = this.em.createQuery("SELECT c FROM Curso c WHERE c.nome=:nome");
+		q.setParameter("nome",nome);
+		
+		return (Curso) q.getSingleResult();
+		//return q.getResultList();
+	}
+	
+	
+	public boolean alterar(Curso curso) {
+		this.em.getTransaction().begin();
+		try {
+			this.em.merge(curso);
+			this.em.getTransaction().commit();
+			
+			return true;
+		} catch (Exception e) {
+			this.em.getTransaction().rollback();
+			
+			return false;
+		}
+	}
+	
+	
+	public boolean excluir(Curso curso) {
+		this.em.getTransaction().begin();
+		try {
+			this.em.remove(curso);
+			this.em.getTransaction().commit();
+			
+			return true;
+		} catch (Exception e) {
+			this.em.getTransaction().rollback();
+			
+			return false;
+		}
+	}
+	
+    }
+            </pre>
+            <li>Alterar a classe Principal onde utiliza o retorno dos métodos da DAO que passaram a retornar <i>boolean</i>.</li>
+            <br>
+            <li>Tirar o <i>try..catch</i> da classe Principal - MENU.</li>
+        </ol>
+        <p><strong>Lembre-se de incluir as bibliotecas necessárias para cada comando, além de modificar o <i>User, Password, Database</i> e <i>Table</i> nos comandos, para conxão correta com o teu banco de dados.</strong></p>
+    </body>
+</html>
