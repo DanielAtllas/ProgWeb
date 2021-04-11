@@ -164,8 +164,8 @@
             <strong>ResultSet</strong> rs = <strong>stmt.executeQuery();</strong>
             Curso curso = <strong>null;
             if (rs.first())</strong> {
-                Curso curso = <strong>new</strong> Curso();
-                curso.setId(<strong>rs.getLong</strong>("id"));
+                curso = <strong>new</strong> Curso();
+                curso.setID(<strong>rs.getLong</strong>("id"));
                 curso.setNome(<strong>rs.getString</strong>("nome"));
                 curso.setSemestres(<strong>rs.getInt</strong>("semestres"));
                 curso.setValor(<strong>rs.getFloat</strong>("valor"));
@@ -173,7 +173,7 @@
             <strong>rs.close();
             stmt.close();
             
-            return cursos;</strong>
+            return curso;</strong>
         }
         
         
@@ -202,7 +202,7 @@
             }
             <strong>String</strong> sql="DELETE FROM curso WHERE=?";
             <strong>PreparedStatement</strong> stmt = <strong>con.prepareStatement(sql)</strong>;
-            <strong>stmt.setString</strong>(1, curso.getID());
+            <strong>stmt.setLong</strong>(1, curso.getID());
             <strong>int</strong> retorno = <strong>stmt.executeUpdate()</strong>;
             <strong>stmt.close();
             
