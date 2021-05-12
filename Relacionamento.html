@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Relacionamento - Prog. Web</title>
+        <meta name="Relacionamento - Prog. Web" content="Este é um site de testes sobre programação web.">
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <h1>Relacionamento - Prog. Web</h1>
+        <p>Ao trabalharmos com banco de dados, é comum nos depararmos com ambientes com muitas tabelas sendo atualizadas, de forma que algumas dessas se relacionam umas com as outras. Dizemos que uma tabela têm relação quando esta possui referência à alguma coluna de outra tabela, ou seja, em uma tabela X também será exibido alguma coluna de uma outra tabela Y, por exemplo. Chamamos então essa coluna de exibição como <strong>foreign key</strong> ou chave estrageira.</p>
+        <p>Veja o exemplo abaixo com a ilustração de relacionamento, para um melhor entendimento:</p>
+        <pre>
+        <strong>Tabela Y</strong>
+        
+        ID| NOME | SEXO | NASC
+        -- ------ ------ -----
+        1 | Ana  | F    | 20/02/1999
+        
+        
+        
+        <strong>Tabela X</strong>
+        
+        ID_Y| ID | NOME 
+        ---- ---- ------
+        1   | 1  | Cliente
+        
+        </pre>
+        <p>Perceba então que ao chamar a tabela X, por esta ter um esquema de relação com a tabela Y, podemos identificar qual o Cliente em questão desta linha. Neste caso, temos a colua <i>"ID_Y"</i> como a <i>foreign key</i> do relacionamento.</p>
+        <p>Continuando então o sistema de faculdade implementado nas aulas anteriores, criaremos agora no database uma tabela <i>Aluno</i> para ter relação com a tabela de <i>Cursos</i>:</p>
+        <pre>
+        <strong>CREATE TABLE</strong> aluno (
+             id <strong>int(10) unsigned NOT NULL AUTO_INCREMENT,</strong>
+             nome <strong>varchar(50) NOT NULL,</strong>
+             email <strong>varchar(40) DEFAULT NULL,</strong>
+             dtaNasc <strong>datetime NOT NULL,</strong>
+             ativo <strong>tinyint(1) DEFAULT NULL,</strong>
+             sexo <strong>char(1) NOT NULL,</strong>
+             idCurso <strong>int(10) unsigned NOT NULL,</strong>
+             
+             <strong>PRIMARY KEY</strong> (id),
+             <strong>KEY</strong> fk_aluno_curso (idCurso),
+             <strong>CONSTRAINT</strong> fk_aluno_curso <strong>FOREIGN KEY</strong> (idCurso) <strong>REFERENCES</strong> curso(id)
+        );
+        </pre>
+        <p>Vamos então debugar este comando <i>CREATE</i> para um melhor entendimento. Temos então a presença dos comandos que relacionam esta tabela à tabela <i>Curso</i>, através da coluna <i>idCurso</i>, comando <i>KEY fk_...</i> e <i>CONSTRAINT ...</i>, indicando que a coluna <i>idCurso</i> fará referência à coluna <i>ID</i> da tabela <i>Curso</i>.</p>
+        <p>Diante disso, tendo criado a tabela com exito, partiremos para sua implementação no projeto Java, ou seja, a criação da <strong>classe Aluno</strong>:</p>
+        <pre>
+        <strong>@Entity</strong>
+        <strong>public class</strong> Aluno <strong>implements Serializable</strong> {
+            <strong>@Id</strong>
+            <strong>@GeneratedValue(strategy=GenerationType.IDENTITY)</strong>
+            <strong>private long</strong> id;
+            <strong>private String</strong> nome;
+            <strong>private String</strong> email; 
+            <strong>@Temporal(TemporalType.DATE)</strong>
+            <strong>private Date</strong> dtaNasc;
+            <strong>private boolean</strong> ativo;
+            <strong>private char</strong> sexo;
+            <strong>@ManyToOne</strong>
+            <strong>@JoinColumn(name=</strong>"idCurso")
+            <strong>private</strong> Curso curso;
+        }
+        </pre>
+        <p>Faremos então a debugação destes comandos para um melhor entendimento:</p>
+        <ul>
+            <li>@Entity - Confirmação/identificação desta classe como uma entidade/tabela no database;</li>
+            <br>
+            <li>@Id e @GeneratedValue - Criação de um atributo/coluna "ID" que será gerada randomicamente.</li>
+            <br>
+            <li>@temporal - comando deverá ser usado em todas aquelas colunas que exigirem registros de Data e/ou Horario 
+(Neste caso, ".DATE").</li>
+            <br>
+            <li>@ManuToOne - indica o tipo de relação que esta tabela terá, sendo assim Nx1 = ManyToOne (Da mesma forma que poderiamos indicar se a relação fosse 1x1 = OneToOne ou 1xN = OneToMany ou NxN = ManyToMany).</li>
+            <br>
+            <li>@JoinColumn - indicar em qual coluna ele armazenará o registro de join (a relação) da coluna da outra tabela, sendo neste 
+caso "idCurso". E logo em seguida, foi criado um atributo da classe que esta fará relação.</li>
+        </ul>
+        <p>Temos agora o aluno inserido tanto no banco de dados como no programa Java. Precisaremos agora incrementa-lo no arquivo <strong>persistence.xml</strong>, de forma a identifica-lo como objeto-tabela no programa. Para isso, basta adiciona-lo com o comando <i>&lt;class></i>:</p>
+        <pre>
+        <strong>&lt;class></strong>br.ucb.modelo.Aluno<strong>&lt;/class></strong>
+        </pre>
+        <p>Agora, como de costume, criaremos a classe <i><strong>DAO</strong></i> desta nova classe, a qual segue o exato mesmo conceito da criação da classe <i>CursoDAO</i>:</p>
+        <pre>
+        package FaculdadeDAO;
+
+        import java.sql.PreparedStatement;
+        import java.sql.ResultSet;
+        import java.sql.SQLException;
+        import java.util.ArrayList;
+        import java.util.List;
+
+        import javax.persistence.EntityManager;
+        import javax.persistence.Query;
+
+        import Faculdade.Aluno;
+
+        public class AlunoDAO {
+            //Attributes
+            private EntityManager em;
+
+            //Constructor
+            public AlunoDAO(){
+                this.em = ConnectionFactory.getEntityManager();
+            }
+
+            public boolean incluir(Aluno aluno) {
+                this.em.getTransaction().begin();
+                try {
+                    this.em.persist(aluno);
+                    this.em.getTransaction().commit();
+
+                    return true;
+                } catch (Exception e) {
+                    this.em.getTransaction().rollback();
+
+                    return false;
+                }
+            }
+
+            //Methods
+            @SuppressWarnings("unchecked")
+            public List&lt;Aluno> listar() {
+                Query q = this.em.createQuery("SELECT a FROM Aluno a");
+
+                return q.getResultList();
+            }
+
+
+            public Aluno consultar(long id) {
+                return this.em.find(Aluno.class, id);
+            }
+
+            public Aluno consultar(String nome) {
+                Query q = this.em.createQuery("SELECT a FROM Aluno a WHERE a.nome=:nome");
+                q.setParameter("nome",nome);
+
+                return (Aluno) q.getSingleResult();
+                //return q.getResultList();
+            }
+
+
+            public boolean alterar(Aluno aluno) {
+                this.em.getTransaction().begin();
+                try {
+                    this.em.merge(aluno);
+                    this.em.getTransaction().commit();
+
+                    return true;
+                } catch (Exception e) {
+                    this.em.getTransaction().rollback();
+
+                    return false;
+                }
+            }
+
+
+            public boolean excluir(Aluno aluno) {
+                this.em.getTransaction().begin();
+                try {
+                    this.em.remove(aluno);
+                    this.em.getTransaction().commit();
+
+                    return true;
+                } catch (Exception e) {
+                    this.em.getTransaction().rollback();
+
+                    return false;
+                }
+            }
+
+        }
+
+        </pre>
+        <p>Perceba então que temos o nosso ambiente formulado de forma que através da classe/tabela <i>Aluno</i>, é possível obter o <i>ID</i> de qual curso ele está matriculado. Mas, por capricho, vamos imaginar que seria viável ter também na classe <i>Curso</i>, uma forma de exibir todos os alunos nela matriculados. Para isso, basta alterar a classe <i>Curso</i>, acrescentando um <strong>ArrayList</strong> para chamada dos alunos:</p>
+        <pre>
+        <strong>@OneToMany(mappedBy</strong>="curso", <strong>fetch=FetchType.EAGER)</strong>
+        <strong>private List</strong>&lt;Aluno> alunos;
+        </pre>
+        <p>Por fim, bastará realizar a criação do <strong>CRUD</strong> desta nova classe/tabela criada para a aplicação, ou seja, atualizar a classe <i>Main</i> e seu Menu:</p>
+        <pre>
+        case 3:
+            System.out.println("\n\n ==== CONSULTAR ==== \n");
+            System.out.print("Digite o nome do curso...................: ");
+            nome = teclado.next();
+            curso = cursoDAO.consultar(nome);
+            if (curso != null) {
+                System.out.println("\n Nome......: " + curso.getNome() + "\n" + " Semestres.: "
+                        + curso.getSemestres() + "\n" + " Valor.....: " + curso.getValor());
+
+                System.out.println("\n Alunos: \n\n");
+                for (Aluno alu : curso.getAlunos()) {
+                    System.out.println(" Nome......: " + alu.getNome()+"\n");
+                }
+
+                System.out.println("\n ========================== \n");
+            }
+        break;
+        </pre>
+        <hr>
+        <h2>Relacionamento NxN</h2>
+        <p>No contexto acima, foi ensinado como trabalhar com o relacionamento entre tabelas, de forma que estas se relacionem de forma <strong>1xN</strong> (ou seja, cada aluno pode ser matriculado a somente 1 curso). Agora, iremos trabalhar como se utilizaar em relações <strong>NxN</strong>, onde é necessário o uso de uma <strong>tabela intermediária</strong> para a ligação entre essas duas outras em questão.</p>
+        <p>Retornando então ao projeto <i>Faculdade</i>, criaremos uma nova classe para que trabalhe de forma NxN com a classe <i>Curso</i>, criaremos então a classe <i>Professor</i>. Sua implementação enquanto banco de dados, será da seguinte forma:</p>
+        <pre>
+        CREATE TABLE professor (
+             id int(10) unsigned NOT NULL AUTO_INCREMENT,
+             nome varchar(50) NOT NULL,
+             email varchar(40) DEFAULT NULL,
+             dtaNasc datetime NOT NULL,
+             sexo char(1) NOT NULL,
+             
+             PRIMARY KEY (id)
+        );
+        </pre>
+        <p>De forma simples, apenas indicando qual será a chave primária desta nova tabela (ID nesse caso). Porém, como dito anteriormente, existe a necessidade da criação da tabela intermediária, <strong>a tabela de relacionamento</strong> <i>Professor x Curso</i>. Esta então, conterá <strong>2 colunas ID</strong>, de forma que poderemos identificar o ID de Curso e Professor, além das suas chaves estrangeiras:</p>
+        <pre>
+        CREATE TABLE curso_professor (
+             idCurso int(10) unsigned NOT NULL,
+             idProfessor int(10) unsigned NOT NULL,
+             
+             PRIMARY KEY (idCurso, idProfessor),
+             KEY fk_curso (idCurso),
+             KEY fk_professor (idProfessor),
+             CONSTRAINT fk_curso FOREIGN KEY (idCurso) REFERENCES curso(id),
+             CONSTRAINT fk_professor FOREIGN KEY (idProfessor) REFERENCES professor(id)
+        );
+        </pre>
+        <p>Perceba que em tese, o processo de ciração é muito simples, bastando indicar as colunas que serão chaves primárias, as estrangeiras e em qual coluna de qual tabela essas chaves estarão relacionadas. Por este sentido, criaremos agora a <strong>classe Professor</strong> no projeto Java e implementaremos os comandos de configuração da relação NxN:</p>
+        <pre>
+        @Entity
+        public class Professor implements Serializable {
+             ...
+             @ManyToMany(/*cascade=CascadeType.ALL,*/ fetch=FetchType.EAGER)
+             @JoinTable(name="curso_professor",
+                        joinColumns=@JoinColumn(name="idProfessor"), 
+                        inverseJoinColumns=@JoinColumn(name="idCurso")
+             ) 
+             private List&lt;Curso> cursos;
+             ...
+        }
+        </pre>
+    </body>
+</html>
