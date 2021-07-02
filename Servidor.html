@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <title>Servidor - Prog. Web</title>
+        <meta name="description" content="Este é um site referênte à estudos de Prog. Web">
+    </head>
+    <body>
+        <h1>Prog. Web - Servidor</h1>
+        
+        <p>Dando continuidade aos estudos de programação web, de forma a criar aplicações que possuam uma interação direta com a rede de internet e possa ser disponibilizada aos usuários, iremos partir agora para a <strong>configuração do servidor da aplicação</strong>. Este servidor, tem como função ser a "casa" de abastecimento do programa, onde este ficará armazenado todo tipo de dado recorrente ao programa em questão, como dados, scripts e etc.</p>
+        
+        <h2>Configurando o Ambiente de Servidor Web</h2>
+        
+        <p>Por estarmos utilizando da IDE do eclipse, iremos utilizar do <strong>TomCat</strong> como nosso servidor para este serviço. O tomcat, funciona como uma base de dados criada a partir da própria máquina que o está utilizando, ou seja, este fará da máquina do programador como um servidor privado e a partir dele, o programa poderá ser exibido para toda a rede.</p>
+        
+        <p>Diante disso, partiremos para o processo de configuração do TomCat para com o eclipse. Para isso, seguiremos uma pequena série de passos, onde: </p>
+        
+        <ol>
+            <li>No diretório principal de sua máquina (c:/), crie uma pasta de nome <strong>TomCat</strong> (Esta será para um redirecionamento mais simples de encontro do TomCat, uma vez que será preciso acioná-lo posteriormente).</li>
+            <br>
+            <li>Será preciso agora baixar o arquivo .zip no próprio site do fornecedor: <a href="https://tomcat.apache.org/">tomcat.apache.org</a>, escolhermos a versão que será utilizada e simplismente baixa-la na pasta criada anteriormente.</li>
+            <br>
+            <li>Após isso, basta extrair o arquivo na pasta em questão, ou seja, o TomCat é uma aplicação direta e por isso, não é preciso executa-lo ou instala-lo na máquina.</li>
+            <br>
+        </ol>
+        <p>Tendo o TomCat extraido na pasta desejada, este já estará disponível para uso nas aplicações web que forem criadas pelo eclipse, deviendo agora apenas configura-lo para acesso. Então, ao abrir o eclipse, ao invés de criarmos um projeto como <i>java project</i>, iremos escolher a opção de <i><strong>Dynamic Web Projct</strong></i>. Você verá que a janela de configuração inicial do projeto será um pouco maior que a padrão.</p>
+        
+        <p>Nisso, teremos de ir na opção <i><strong>Target Runtime</strong></i> e <i><strong>New Runtime</strong></i>. Então uma pequena janela de opções será aberta e será necessário escolher a de TomCat, que está dentro da pasta <i>Apache</i> (Você verá que muitas opções de TomCat em diferentes versões serão exibidas, cabendo ao programador escolher a que melhor te atende - Recomenda-se sempre escolher a versão mais recente).</p>
+        
+        <p>Feito isso, iremos na opção <i>next</i> e agora na opção <i>Browse</i> para definirmos o local em que se encontra o TomCat extraido, ou seja, iremos ir de encontro no diretório em que está o tomcat, selecionar sua pasta extraida e pronto. Bssta agora apertar em <i>finish</i> e encerrar as configurações do projeto para inicia-lo.</p>
+        
+        <p><strong>OBS: Caso todos os passos tenham sido corretamente seguidos, na parte inferior do Eclipse (após o projeto estar criado) estará a opção de <i>Servers</i> como na imagem abaixo:</strong></p>
+        
+        <img src="https://danielatllas.github.io/ProgWeb/Servers1.png">
+        
+        <p>Perceba a indicação de que nenhum servidor está configurado até então, descrito em azul. Clicaremos nesta opção e faremos o processo semelhante a anteriormente, escolhendo a versão do TomCat que será usada e clicando em <i>finish</i>. Feito isso, <strong>teremos todo o ambiente de aplicação web configurado e pronto para uso.</strong></p>
+        
+        <p><strong>OBS: Após a conclusão de todas as etapas anteriores, será possível identificar um projeto criado instantaneamente no canto esquerdo do eclipse, de nome <i>Servers</i>, este projeto não deverá ser nunca excluido e também não poderá ser fechado, pois para que a aplicação funcione com o Tomcat, este projeto deverá estar aberto para uso no eclipse.</strong></p>
+        <hr>
+        <h2>Criando um Projeto Web</h2>
+        
+        <p>Bom, como foi dito anteriormente, o processo de criação de um projeto web é um pouco diferente de um projeto comum, portanto, é perceptivel que as opções de bibliotecas e diretórios do projto são um pouco mais extensas e com mais opções. Basicamente, nossa interação se resumirá à pasta de nome <strong><i>src</i></strong>, onde iremos inserir as classes .java na pasta de nome <i>java</i> e as classes páginas html na pasta de nome <i>webapp</i>.</p>
+        
+        <p><strong>OBS: Na pasta de nome <i>WEB-INF</i> estará presente uma segunda pasta de nome <i>lib</i>. Nesta, iremos armazenar todas as bibliotecas que usaremos no programa, sendo elas:</strong></p>
+        <ul>
+            <li>eclipselink</li>
+            <li>jakartas.persistence</li>
+            <li>jakarta.servlet.jsp.jstl</li>
+            <li>jakarta.servlet.jsp.jstl-api</li>
+            <li>mysql-connector-java</li>
+        </ul>
+    </body>
+</html>
